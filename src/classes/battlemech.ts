@@ -238,9 +238,9 @@ export class BattleMech {
     private _lastUpdated: Date = new Date();
     private _uuid: string = generateUUID();
 
-    private _mechType = mechTypeOptions[5];
+    private _mechType = mechTypeOptions[0];
     private _tech = btTechOptions[0];
-    private _era = btEraOptions[1]; // Default to Succession Wars
+    private _era = btEraOptions[5]; // Default to Succession Wars
     private _model: string = "";
     private _name: string = "";
     private _tonnage = 20;
