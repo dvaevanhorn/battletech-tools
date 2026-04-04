@@ -4019,7 +4019,6 @@ export class BattleMech {
             if( criticalTally[ item.uuid ] >= item.crits )
                 removeFromUnallocated = true;
 
-
             this._allocateCritical(
                 item.tag,
                 item.rear,
@@ -4125,6 +4124,7 @@ export class BattleMech {
                 this._no_right_arm_lower_actuator = false;
             } else {
                 this._no_right_arm_hand_actuator = true;
+                this._clearArmMeleeCriticalAllocation();
             }
 
         }
@@ -4134,6 +4134,7 @@ export class BattleMech {
                 this._no_left_arm_lower_actuator = false;
             } else {
                 this._no_left_arm_hand_actuator = true;
+                this._clearArmMeleeCriticalAllocation();
             }
 
         }
@@ -4149,6 +4150,7 @@ export class BattleMech {
             } else {
                 this._no_right_arm_lower_actuator = true;
                 this._no_right_arm_hand_actuator = true;
+                this._clearArmMeleeCriticalAllocation();
             }
         }
         if( location === "la" ) {
@@ -4158,6 +4160,7 @@ export class BattleMech {
             } else {
                 this._no_left_arm_lower_actuator = true;
                 this._no_left_arm_hand_actuator = true;
+                this._clearArmMeleeCriticalAllocation();
             }
 
         }
@@ -7202,19 +7205,34 @@ export class BattleMech {
                     toLocTag !== "lt" &&
                     toLocTag !== "ct" &&
                     toLocTag !== "rt"
-                 ) {
+                ) {
                     return false;
-                 }
+                }
+            }
+
+            // Check to see if it's a melee weapon, and make sure it's going into an arm with a hand actuator
+            if( item && item?.tag.startsWith( "melee" ) ) {
+                if (
+                    ( this.isQuad() ) || // Quads have no arms
+                    ( toLocTag !== "la" && toLocTag !== "ra" ) ||
+                    ( toLocTag === "la" && !this.hasHandActuator( "la" ) ) ||
+                    ( toLocTag === "ra" && !this.hasHandActuator( "ra" ) )
+                ) {
+                    return false;
+                }
             }
 
             fromItem.loc = toLocTag;
             fromItem.slot = toIndex;
+
+
             toLocation[toIndex] = JSON.parse(JSON.stringify(fromItem));
 
             toLocation[toIndex].size = toSize;
             for( let phC = 1; phC < toSize; phC++) {
                 toLocation[toIndex + phC] = placeholder;
             }
+
 
             if( removeFrom ) {
                 fromLocation[fromIndex] = null;
@@ -7350,6 +7368,21 @@ export class BattleMech {
 
         return false;
     };
+
+    private _clearArmMeleeCriticalAllocation() {
+        for( let localCount = this._criticalAllocationTable.length; localCount >= 0; localCount--) {
+            let item = this._criticalAllocationTable[localCount]
+            if(
+                    item && 
+                    (item.loc === "ra" || item.loc === "la" ) &&
+                    item.tag.startsWith("melee")
+                )
+            {
+                this._criticalAllocationTable.splice(localCount, 1);
+            }
+        }
+        this._calc()
+    }
 
     private _clearArmCriticalAllocationTable() {
         for( let localCount = this._criticalAllocationTable.length; localCount >= 0; localCount--) {
