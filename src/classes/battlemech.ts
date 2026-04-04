@@ -3304,7 +3304,7 @@ export class BattleMech {
         }
 
         if( this._jumpSpeed > 0) {
-            this._maxMoveHeat = this._jumpSpeed;
+            this._maxMoveHeat = this._jumpSpeed >= 3 ? this._jumpSpeed : 3;
             // if( this._jumpJetType.tag === "standard" ) {
             //     // standard
             //     this._weights.push({
